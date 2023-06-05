@@ -1,0 +1,23 @@
+Option 1 start
+
+Welcome to the study guide selection menu!
+List of study guides to choose from:
+- Enter your own guide (1)
+- C++ Study Guide (2)
+
+
+
+
+Option 2 start
+
+Welcome to the study center!
+List of options:
+- Flashcards (1)
+- Learn (2)
+- Test (3)
+- Match (4)
+- See all cards (5)
+Pick an option: 
+Valid options: 1,2,3,4,5
+
+Option 2 end
