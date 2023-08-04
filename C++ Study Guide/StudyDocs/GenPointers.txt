@@ -1,0 +1,31 @@
+							Pointers to structs
+Like any other type, structures can be pointed by its own type of pointers:
+struct movies_t {
+ string title;
+ int year;
+};
+movies_t amovie;
+movies_t * pmovie;
+pmovie = &amovie;
+pmovie -> title is equivalent to (*pmovie).title, but not *pmovie.title, which is equivalent to *(pmovie.title)
+
+a.b, evaluates member b of object a
+a->b, evaluates member b of object pointed by a, equivalent to (*a).b
+*a.b, evaluates value pointed by member b of object a, equivalent to *(a.b)
+
+Nested structs:
+struct movies_t {
+ string title;
+ int year;
+};
+struct friends_t {
+ string name;
+ string email;
+ movies_t favorite_movie;
+ } charlie, maria;
+friends_t * pfriends = &charlie;
+
+charlie.name
+maria.favorite_movie.title
+charlie.favorite_movie.year
+pfriends->favorite_movie.year

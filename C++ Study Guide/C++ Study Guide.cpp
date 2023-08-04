@@ -15,7 +15,8 @@ std::vector <StudyCards> cards;
 int main()
 {
     std::string userInput = " ";
-    printOptionsFile(1);//Print options for Study Guide selection
+    std::cout << "Hello!\n";
+    //printOptionsFile(1);//Print options for Study Guide selection
     std::cin.ignore();
     std::getline(std::cin, userInput);
     //Flashcards, learn, test, match
@@ -25,6 +26,7 @@ int main()
 
 std::vector<std::string> printOptionsFile(int optionNum)
 {
+    std::vector <std::string> vectorThing;
     bool ignore = true;
     std::fstream newfile;
     newfile.open("Options.txt", std::ios::in);
@@ -48,6 +50,8 @@ std::vector<std::string> printOptionsFile(int optionNum)
             }
         }
     }
+
+    return vectorThing;
 
 }
 bool checkIgnore(std::string newLine, bool ignore, int optionNum)

@@ -1,0 +1,88 @@
+Data Types
+- Defined data types (typedef)
+	- does not create different types, only synonyms (think #define but for data types)
+	- Example: typedef char C makes it so that C may be used as char
+		- C word and char word have the same utility
+- Unions
+	- one portion of memory is accessed by different data types sincethey share the same location in memory
+	- example:
+	union *union_name* {
+	member_type1 member_name;
+	...
+	} object_names;
+	- All elements of the union declaration occpy the same physical space in memory
+	- union mytypes t {
+		char c;
+		int i;
+		float f;
+		} mytypes;
+	- The above will create mytypes.c, mytypes.i, etc. with the same location in memory. Changing one will change all
+	- For an anonymous union, simply do not name the union:
+	union {
+		float dollars;
+		int yens;
+	}
+	- This allows you to use dollars instead of price.dollars (if you had named the union)
+- Enumerations (enum)
+	- create new data types that containes values beyond the fundamental data types
+	- Format:
+	enum enumeration_name {
+	value 1,
+	value 2,
+	value 3,
+	} object_names;
+	- Example: enum colors_t {black, blue, green, cyan, red}; wherein colors_t may take on values of black, blue, green, cyan, red
+	- The values in order correspond to different integer values, starting with 0 (similar to indices)
+	- black would correspond to 0, blue to 1, etc
+	- you can explicitly state the value of the first type, which would then increase by a + 1 afterward.
+	enum colors_t {black = 1, blue, green}; in which blue = 2, etc
+- Classes
+	- Class: data structure expanded, holds data and functions
+	- object: instantiation of a class
+	- private members are accessible only from within other members of the same class or from friends
+	- protected members are accessible from members of their same class and friends and derived classes
+	- public members are accessible from wherever object is visible
+	- private is the default level
+	class className {
+	private:
+	...
+	public:
+	...
+	protected:
+	...
+	} objectName;
+	- the above creates class className and object objectName
+	- There are two ways to define methods (within and outside of the class):
+	class CRectangle {
+	 int x, y;
+	 public:
+	 void set_values (int,int);
+	 int area () {return (x*y);}
+	};
+	void CRectangle::set_values (int a, int b) {
+	 x = a;
+	 y = b;
+	 }
+	 - :: defines the scope of the method to its class
+	 - Constructors are used to create objects and assign values to its values so they may be executed
+	 - Destructors destroy objects such that dynamically allocated mememory may be used for other purposes, has a ~ sign in front of the class name and carries no paramaters
+	 - ex:
+	 class className {
+	 public:
+	 CRectangle(datatype, datatype, etc);//Constructor
+	 ~CRectangle ();//destructor
+	 ...
+	 }
+	 - ex continued:
+	 CRectangle::CRectangle (int a, int b) {
+		 width = new int;
+		 height = new int;
+		 *width = a;
+		 *height = b;
+		}
+		CRectangle::~CRectangle () {
+		 delete width;
+		 delete height;
+		} 
+	- Overloarding constructors (different ammounts of paramaters, same order)
+	- Defalt constructor (no paramaters)

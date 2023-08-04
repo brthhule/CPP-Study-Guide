@@ -1,0 +1,28 @@
+Void Pointer:
+The void type of pointer is a special type of pointer. In C++, void represents the absence of type, so void pointers 
+are pointers that point to a value that has no type (and thus also an undetermined length and undetermined 
+dereference properties). 
+This allows void pointers to point to any data type, from an integer value or a float to a string of characters. But in 
+exchange they have a great limitation: the data pointed by them cannot be directly dereferenced (which is logical, 
+since we have no type to dereference to), and for that reason we will always have to cast the address in the void 
+pointer to some other pointer type that points to a concrete data type before dereferencing it. 
+One of its uses may be to pass generic parameters to a function: 
+
+#include <iostream>
+using namespace std; 
+void increase (void* data, int psize) 
+{ 
+ if ( psize == sizeof(char) ) 
+ { char* pchar; pchar=(char*)data; ++(*pchar); } 
+ else if (psize == sizeof(int) ) 
+ { int* pint; pint=(int*)data; ++(*pint); } 
+} 
+int main () 
+{ 
+ char a = 'x'; 
+ int b = 1602; 
+ increase (&a,sizeof(a)); 
+ increase (&b,sizeof(b)); 
+ cout << a << ", " << b << endl; 
+ re
+
