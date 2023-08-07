@@ -86,3 +86,1360 @@ Data Types
 		} 
 	- Overloarding constructors (different ammounts of paramaters, same order)
 	- Defalt constructor (no paramaters)
+	- Pointers to objects of classes
+	- Expressions:
+		- *x, pointed by x
+		- &x, address of x
+		- x.y, member y of object x
+		- x->y, member y of object pointed by x
+		- (*x).y, member y of object pointed by x (same as above)
+		- x[0], first object pointed by x
+		- x [n], (n+1)th object pointed by x
+- classes and structs are essentially the same thing except the default for classes is private vs public for structs
+- Unions are classes and can hold functions, default access is public, but can only store one data member at a time
+- Overloading operators (kinda mergin objects???):
+	- To overload an operator in order to use it with classes we declare operator functions, which are regular functions whose names are the operator keyword followed by the operator sign that we want to overload. The format is: 
+		type operator sign (parameters) { /*...*/ 
+// vectors: overloading operators example
+#include <iostream>
+using namespace std; 
+class CVector { 
+ public: 
+ int x,y; 
+ CVector () {}; 
+ CVector (int,int); 
+ CVector operator + (CVector); 
+}; 
+CVector::CVector (int a, int b) { 
+ x = a; 
+ y = b; 
+} 
+CVector CVector::operator+ (CVector param) { 
+ CVector temp; 
+ temp.x = x + param.x; 
+ temp.y = y + param.y; 
+ return (temp); 
+} 
+int main () { 
+ CVector a (3,1); 
+ CVector b (1,2); 
+ CVector c; 
+ c = a + b; 
+ cout << c.x << "," << c.y; 
+ return 0; 
+} 
+the above returns 4,3
+
+The statements below are equivalent:
+c = a + b; 
+c = a.operator+ (b);
+
+CVector d (2,3); 
+CVector e; 
+e = d; // copy assignment operator
+
+Format: expression, operator, member function, global function
+@a, +-*&!~++--, A::operator@(),operator@(A)
+a@, ++--, A::operator@(int), operator@(A,int)
+a@b, +-*/%&|<>==!=<=>=<<>>&&||,, A::operator@(B), operator@(A,B)
+a@b, = += -+ *= /= %= ^= &= != <<= >>= [], A::operator@(B),-
+a(b,c,...), (), A::operator()(B,C...), -
+a->x, ->, A::operator->(), -
+
+----------------------
+- keyword "this"
+- represents a pointer to the object whoe member function is being executed, pointer to the object itself
+- Can check if a parameter passed to a member function is the object itself:
+/ this
+#include <iostream>
+using namespace std; 
+class CDummy { 
+ public: 
+ int isitme (CDummy& param); 
+}; 
+int CDummy::isitme (CDummy& param) 
+{ 
+ if (&param == this) return true; 
+ else return false; 
+} 
+int main () { 
+ CDummy a; 
+ CDummy* b = &a; 
+ if ( b->isitme(a) ) 
+ cout << "yes, &a is b"; 
+ return 0;
+ }
+
+ returns yes, &a is b
+
+ - Frequently used in operator= member functions that return objects by reference:
+
+ CVector& CVector::operator= (const CVector& param)
+{ 
+ x=param.x; 
+ y=param.y; 
+ return *this; 
+}
+
+------------------------------
+- Static members
+- A class can contain static members, either data or functions
+- static data members of a class (class variables), one unique value for all the objects of that same class. Their content is not different from one object of this class to another
+
+// static members in classes
+#include <iostream>
+using namespace std; 
+class CDummy { 
+ public: 
+ static int n; 
+ CDummy () { n++; }; 
+ ~CDummy () { n--; }; 
+}; 
+int CDummy::n=0; 
+int main () { 
+ CDummy a; 
+ CDummy b[5]; 
+ CDummy * c = new CDummy; 
+ cout << a.n << endl; 
+ delete c; 
+ cout << CDummy::n << endl; 
+ return 0; 
+} 
+
+prints:
+7
+6
+
+- Static members are essentially global variables but within the class scope, to avoid it being declared every time an object is created, include the prototype for it in the class declaration but define it outside the class:
+int CDummy::n = 0;
+
+These are the equivalent:
+cout << a.n; 
+cout << CDummy::n; 
+
+------------------------------
+- Friend Functions
+- Friends are functions or classes declared as such, can access private and protected members of a class it is not in:
+// friend functions
+#include <iostream>
+using namespace std; 
+class CRectangle { 
+ int width, height; 
+ public: 
+ void set_values (int, int); 
+ int area () {return (width * height);} 
+ friend CRectangle duplicate (CRectangle); 
+}; 
+void CRectangle::set_values (int a, int b) { 
+ width = a; 
+ height = b; 
+} 
+CRectangle duplicate (CRectangle rectparam) 
+{ 
+ CRectangle rectres; 
+ rectres.width = rectparam.width*2; 
+ rectres.height = rectparam.height*2; 
+ return (rectres); 
+} 
+int main () { 
+ CRectangle rect, rectb; 
+ rect.set_values (2,3); 
+ rectb = duplicate (rect); 
+ cout << rectb.area(); 
+ return 0; 
+}
+
+- Friend functions can conduct operations between two different classes, but its use is generally outside of object-oriented programming methodology, so it's better to use members of the same class to perform operations with them
+
+- Classes can also be friends:
+/ friend class
+#include <iostream>
+using namespace std; 
+class CSquare; 
+class CRectangle { 
+ int width, height; 
+ public: 
+ int area () 
+ {return (width * height);} 
+ void convert (CSquare a); 
+}; 
+class CSquare { 
+ private: 
+ int side; 
+ public: 
+ void set_side (int a) 
+ {side=a;} 
+ friend class CRectangle; 
+}; 
+void CRectangle::convert (CSquare a) { 
+ width = a.side; 
+ height = a.side; 
+} 
+ 
+int main () { 
+ CSquare sqr; 
+ CRectangle rect; 
+ sqr.set_side(4); 
+ rect.convert(sqr); 
+ cout << rect.area(); 
+ return 0; 
+} 
+
+-------------------------
+- inheritance, allows the creation of classes that are derived from other classes, automatically include its parent's members, in addition to their own
+- Format:
+class derived_class_name: public base_class_name 
+{ /*...*/ };
+
+// derived classes
+#include <iostream>
+using namespace std; 
+class CPolygon { 
+ protected: 
+ int width, height; 
+ public: 
+ void set_values (int a, int b) 
+ { width=a; height=b;} 
+ }; 
+class CRectangle: public CPolygon { 
+ public: 
+ int area () 
+ { return (width * height); } 
+ }; 
+class CTriangle: public CPolygon { 
+ public: 
+ int area () 
+ { return (width * height / 2); } 
+ }; 
+ 
+int main () { 
+ CRectangle rect; 
+ CTriangle trgl; 
+ rect.set_values (4,5); 
+ trgl.set_values (4,5); 
+ cout << rect.area() << endl; 
+ cout << trgl.area() << endl; 
+ return 0; 
+}
+
+- the keyword that precedes the parent class' name defines the inheritance relationship:
+class CRectangle: public CPolygon {...} makes it so that the maximum access level for the members inherited from the class that follows it is public.
+- public is the most accesible level, specifying it means that the derived class will inherit all the members with the same levels they had in the base class
+if defined as class CRectangle: protected CPolygon {...}, the parent members would be inherited as protected as the max, so public members become protected by private members stay private
+- private is the least accessible level
+- Not defining a  level of access will default as private for classes and public for structs
+- A derived class inherits every member from its parents except: its constructor and destructors, its operator=() members, its friends
+- although constructors are not inherited, the parent construtor is always called when an object from a derived class is created, same for the destructor when an object is destoryed
+
+You can explicitly link a dervied class' constructor to a parent class:
+
+// constructors and derived classes
+#include <iostream>
+using namespace std; 
+class mother { 
+ public: 
+ mother () 
+ { cout << "mother: no parameters\n"; } 
+ mother (int a) 
+ { cout << "mother: int parameter\n"; } 
+}; 
+class daughter : public mother { 
+ public: 
+ daughter (int a) 
+ { cout << "daughter: int parameter\n\n"; }
+}; 
+class son : public mother { 
+ public: 
+ son (int a) : mother (a) 
+ { cout << "son: int parameter\n\n"; } 
+}; 
+int main () { 
+ daughter cynthia (0); 
+ son daniel(0); 
+ 
+ return 0; 
+} 
+
+prints:
+mother: no parameters 
+daughter: int parameter 
+ 
+mother: int parameter 
+son: int parameter
+
+-----------------------
+Multiple inheritance:
+- class CRectangle: public CPolygon, public COutput;
+---------------------
+- Polymorphism: pointers to base class
+- One of the key features of derived classes is that a pointer to a derived class is type-compatible with a pointer to  its base class. Polymorphism is the art of taking advantage of this simple but powerful and versatile feature, that  brings Object Oriented Methodologies to its full potential. 
+/ pointers to base class
+#include <iostream>
+using namespace std; 
+class CPolygon { 
+ protected: 
+ int width, height; 
+ public: 
+ void set_values (int a, int b) 
+ { width=a; height=b; } 
+ }; 
+class CRectangle: public CPolygon { 
+ public: 
+ int area () 
+ { return (width * height); } 
+ }; 
+class CTriangle: public CPolygon { 
+ public: 
+ int area () 
+ { return (width * height / 2); } 
+ }; 
+int main () { 
+ CRectangle rect; 
+ CTriangle trgl; 
+ CPolygon * ppoly1 = &rect; 
+ CPolygon * ppoly2 = &trgl; 
+ ppoly1->set_values (4,5); 
+ ppoly2->set_values (4,5); 
+ cout << rect.area() << endl; 
+ cout << trgl.area() << endl; 
+ ret
+
+ prints 
+ 20
+ 10
+ ----------------------
+ Virtual members: a member of a class that can be redfined in its derived classes. To delare a member as virtual, precede delaration with keyword "virtual"
+
+ / virtual members
+#include <iostream>
+using namespace std; 
+class CPolygon { 
+ protected: 
+ int width, height; 
+ public: 
+ void set_values (int a, int b) 
+ { width=a; height=b; } 
+ virtual int area () 
+ { return (0); } 
+ }; 
+class CRectangle: public CPolygon { 
+ public: 
+ int area () 
+ { return (width * height); } 
+ }; 
+class CTriangle: public CPolygon { 
+ public: 
+ int area () 
+ { return (width * height / 2); } 
+ }; 
+int main () { 
+ CRectangle rect; 
+ CTriangle trgl; 
+ CPolygon poly; 
+ CPolygon * ppoly1 = &rect; 
+ CPolygon * ppoly2 = &trgl; 
+ CPolygon * ppoly3 = &poly; 
+ ppoly1->set_values (4,5); 
+ ppoly2->set_values (4,5); 
+ ppoly3->set_values (4,5); 
+ cout << ppoly1->area() << endl; 
+ cout << ppoly2->area() << endl; 
+ cout << ppoly3->area() << endl; 
+ return 0;
+
+
+ prints
+ 20
+ 10
+ 0
+ ---------------------
+ Abstract base classes:
+ - Similar to the virtual function, but we do not create implementation for the method:
+
+ / abstract class CPolygon
+class CPolygon { 
+ protected: 
+ int width, height; 
+ public: 
+ void set_values (int a, int b)
+ { width=a; height=b; } 
+ virtual int area () =0; 
+}; 
+
+- We cannot create objects for it because the class lacks implementation, but we can have pointers to objects of that class:
+CPolygon poly; would be invalid
+CPolygon * ppoly1; is valid
+- Abstract base classes can be used to point to objects of derived classes
+
+// abstract base class
+#include <iostream>
+using namespace std; 
+class CPolygon { 
+ protected: 
+ int width, height; 
+ public: 
+ void set_values (int a, int b) 
+ { width=a; height=b; } 
+ virtual int area (void) =0; 
+ }; 
+class CRectangle: public CPolygon { 
+ public: 
+ int area (void) 
+ { return (width * height); } 
+ }; 
+class CTriangle: public CPolygon { 
+ public: 
+ int area (void) 
+ { return (width * height / 2); } 
+ }; 
+int main () { 
+ CRectangle rect; 
+ CTriangle trgl; 
+ CPolygon * ppoly1 = &rect; 
+ CPolygon * ppoly2 = &trgl; 
+ ppoly1->set_values (4,5); 
+ ppoly2->set_values (4,5); 
+ cout << ppoly1->area() << endl; 
+ cout << ppoly2->area() << endl; 
+ return 0; 
+} 
+
+prints 
+20
+10
+
+ we can create a function member of the abstract base class CPolygon that is able to print on screen the result of the area() function even though CPolygon itself has no implementation for this function:
+
+ / pure virtual members can be called
+// from the abstract base class
+#include <iostream>
+using namespace std; 
+class CPolygon { 
+ protected: 
+ int width, height; 
+ public: 
+ void set_values (int a, int b) 
+ { width=a; height=b; } 
+ virtual int area (void) =0; 
+ void printarea (void) 
+ { cout << this->area() << endl; } 
+ }; 
+class CRectangle: public CPolygon { 
+ public: 
+ int area (void) 
+ { return (width * height); } 
+ }; 
+class CTriangle: public CPolygon { 
+ public: 
+ int area (void) 
+ { return (width * height / 2); } 
+ }; 
+int main () { 
+ CRectangle rect; 
+ CTriangle trgl; 
+ CPolygon * ppoly1 = &rect; 
+ CPolygon * ppoly2 = &trgl; 
+ ppoly1->set_values (4,5); 
+ ppoly2->set_values (4,5); 
+ ppoly1->printarea(); 
+ ppoly2->printarea(); 
+ return 0; 
+}
+
+prints:
+20
+10
+
+// dynamic allocation and polymorphism
+#include <iostream>
+using namespace std; 
+class CPolygon { 
+ protected: 
+ int width, height; 
+ public: 
+ void set_values (int a, int b) 
+ { width=a; height=b; } 
+ virtual int area (void) =0; 
+ void printarea (void) 
+ { cout << this->area() << endl; } 
+ }; 
+class CRectangle: public CPolygon { 
+ public: 
+ int area (void) 
+ { return (width * height); } 
+ }; 
+class CTriangle: public CPolygon { 
+ public: 
+ int area (void) 
+ { return (width * height / 2); } 
+ }; 
+int main () { 
+ CPolygon * ppoly1 = new CRectangle; 
+ CPolygon * ppoly2 = new CTriangle; 
+ //The above declare the type pointer to CPolygon but the objects dynamically allocated have been declared as having the derived class type directly
+ ppoly1->set_values (4,5); 
+ ppoly2->set_values (4,5); 
+ ppoly1->printarea(); 
+ ppoly2->printarea(); 
+ delete ppoly1; 
+ delete ppoly2; 
+ return 0; 
+} 
+
+prints 
+20
+10
+
+
+----------------------
+Templates:
+- function templates are special functions with genric types
+- lets us create a function type that can be adaupted to more than one type/class without repeating the entire code for each type
+- Format (class and typename are synonymous):
+template <class identifier> function_declaration; 
+template <typename identifier> function_declaration;
+- A template function that returns the greater one of two objects:
+template <class myType> 
+myType GetMax (myType a, myType b) {
+return (a>b?a:b); 
+}
+implementation:
+int x,y; 
+GetMax <int> (x,y);
+
+// function template
+#include <iostream>
+using namespace std; 
+template <class T> 
+T GetMax (T a, T b) { 
+ T result; 
+ result = (a>b)? a : b; 
+ return (result); 
+} 
+int main () { 
+ int i=5, j=6, k; 
+ long l=10, m=5, n; 
+ k=GetMax<int>(i,j); 
+ n=GetMax<long>(l,m); 
+ cout << k << endl; 
+ cout << n << endl; 
+ return 0; 
+}
+
+prints:
+6
+10
+
+- You can create an template instance implicitly such as GetMax(i,m) so long as they are the same type. If i were int and m were long, it would not work if you called it implicitly
+
+- We can modify a template to get multiple data types, such as using GetMax<int, long> (i,m). In this case, we can get two datatypes explicitly
+- If we declare the template as template <class T, class U> T..., we can pass i and m implicitly as different datatypes
+-------------------------
+class templates
+- we can write class templates, such that a class can have members that use template paramaters as types:
+template <class T> 
+class mypair { 
+ T values [2]; 
+ public: 
+ mypair (T first, T second) 
+ { 
+ values[0]=first; values[1]=second;
+ } 
+}; 
+
+in the above case, both of the below examples will work:
+1) mypair<int> myobject (115, 36); 
+2) mypair<double> myfloats (3.0, 2.18); 
+
+How to format a class template method declaration outside of the class:
+// class templates
+#include <iostream>
+using namespace std; 
+template <class T> 
+class mypair { 
+ T a, b; 
+ public: 
+ mypair (T first, T second) 
+ {a=first; b=second;} 
+ T getmax (); 
+}; 
+template <class T> 
+T mypair<T>::getmax () 
+{ 
+ T retval; 
+ retval = a>b? a : b; 
+ return retval; 
+} 
+int main () { 
+ mypair <int> myobject (100, 75); 
+ cout << myobject.getmax(); 
+ return 0; 
+}
+
+prints
+100
+----------------------
+class Template specializzation: templates are used for generic purposes, but if we want a special template implementation for a specific datatype, we can do the following:
+/ template specialization
+#include <iostream>
+using namespace std; 
+// class template:
+template <class T> 
+class mycontainer { 
+ T element; 
+ public: 
+ mycontainer (T arg) {element=arg;} 
+ T increase () {return ++element;} 
+}; 
+// class template specialization:
+template <> 
+class mycontainer <char> { 
+ char element; 
+ public: 
+ mycontainer (char arg) {element=arg;} 
+ char uppercase () 
+ { 
+ if ((element>='a')&&(element<='z')) 
+ element+='A'-'a'; 
+ return element; 
+ } 
+}; 
+int main () { 
+ mycontainer<int> myint (7); 
+ mycontainer<char> mychar ('j'); 
+ cout << myint.increase() << endl; 
+ cout << mychar.uppercase() << endl; 
+ return 0; 
+} 
+
+This returns
+8
+J
+
+Syntax for class template specialization: template<> class myContainer <char> {...};
+
+
+Generic vs specialized templates:
+template <class T> class mycontainer { ... };
+template <> class mycontainer <char> { ... };
+---------------- 
+non-type paramaters for templates (template arrays?):
+
+// sequence template
+#include <iostream>
+using namespace std; 
+template <class T, int N> 
+class mysequence { 
+ T memblock [N]; 
+ public: 
+ void setmember (int x, T value); 
+ T getmember (int x); 
+}; 
+template <class T, int N> 
+void mysequence<T,N>::setmember (int x, T value) 
+{ 
+ memblock[x]=value; 
+} 
+template <class T, int N> 
+T mysequence<T,N>::getmember (int x) { 
+ return memblock[x]; 
+} 
+int main () { 
+ mysequence <int,5> myints; 
+ mysequence <double,5> myfloats; 
+ myints.setmember (0,100); 
+ myfloats.setmember (3,3.1416); 
+ cout << myints.getmember(0) << '\n'; 
+ cout << myfloats.getmember(3) << '\n'; 
+ return 0; 
+} 
+
+prints 100
+3.1416
+
+We can set default class template parameters:
+template <class T=cha, int N=10> class mysequence {...};
+with this, the below statements are equivalent:
+mysequence<> myseq;
+mysequence<char,10> myseq;
+
+---------------------
+templates for multiple-file projects:
+- templates are not normal functions or classes to a compiler; they are compiled on demand
+- Templates are compiled when required, so for multi-file projects, the implementation (definition) of a template class or function must be in the same file as its declaration.
+- Since templates are complied on demand, compilers allow multiple declarations and definitions of the same template in a project without generating linkage errors
+-------------------
+namespaces: allow the grouping of entities like classes, objects, and functions under a name. This way, the global scope can be divied in sub scopes, each one with its own name
+
+format of namespace:
+namespace identifier
+{
+entities
+}
+
+Example:
+namespace myNamespace
+{ 
+ int a, b; 
+} 
+
+To access these variables, we write:
+myNamespace::a
+myNamespace::b
+
+namespaces are useful in the case that a global object or function uses the same identifier as another one, causing redefinition errors:
+// namespaces
+#include <iostream>
+using namespace std; 
+namespace first 
+{ 
+ int var = 5; 
+} 
+namespace second 
+{ 
+ double var = 3.1416; 
+} 
+int main () { 
+ cout << first::var << endl; 
+ cout << second::var << endl; 
+ return 0; 
+} 
+
+- the keyword "using" is used to introduce a name froma  namespace intot the current declarative region:
+/ using
+#include <iostream>
+using namespace std; 
+namespace first 
+{ 
+ int x = 5; 
+ int y = 10; 
+} 
+namespace second 
+{ 
+ double x = 3.1416; 
+ double y = 2.7183; 
+} 
+int main () { 
+ using first::x; 
+ using second::y; 
+ cout << x << endl; 
+ cout << y << endl; 
+ cout << first::y << endl; 
+ cout << second::x << endl; 
+ return 0; 
+}
+
+using can also be used as a directive to include an entire namespace:
+// using
+#include <iostream>
+using namespace std; 
+namespace first 
+{ 
+ int x = 5; 
+ int y = 10; 
+} 
+namespace second 
+{ 
+ double x = 3.1416; 
+ double y = 2.7183; 
+} 
+int main () { 
+ using namespace first; 
+ cout << x << endl; 
+ cout << y << endl; 
+ cout << second::x << endl; 
+ cout << second::y << endl; 
+ return 0; 
+} 
+
+prints:
+ 5
+10 
+3.1416 
+2.7183
+
+
+namespace alias: we can eclare alternate names for existing namespaces using this format:
+namespace new_name = current_name
+
+namespace std: all files in the C++ standard library declare its entities within the std (standard) namespace
+. This is why we use the using namespace std; statement in all programs that used any entity defined in iostream
+
+
+---------------------
+Exceptions
+- Allow us to react to unique circumstances using a try block
+
+Example:
+// exceptions
+#include <iostream>
+using namespace std; 
+int main () { 
+ try
+ { 
+ throw 20; 
+ } 
+ catch (int e) 
+ { 
+ cout << "An exception occurred. " 
+ cout << "Exception Nr. " << e << endl;
+ } 
+ return 0; 
+}
+
+prints:
+An exception occurred. Exception Nr. 20 
+
+The throw statement says that there is an error and passes along the identifier (20) for that error
+
+Using an ellipsis (...) as the paramater of catch makes it so that it catches any exception no matter what the throw exception is. It's used as a default handler that catches all exceptions not caught by other handlers (if specified last)
+
+Ex:
+try { 
+ // code here
+} 
+catch (int param) { cout << "int exception"; } 
+catch (char param) { cout << "char exception"; }
+catch (...) { cout << "default exception"; } 
+
+We can have nested try-catch blocks:
+
+try { 
+ try { 
+ // code here
+ } 
+ catch (int n) { 
+ throw; 
+ } 
+} 
+catch (...) { 
+ cout << "Exception occurred";
+}
+
+Exception specifications: we an limit the exception type it might throw by appending a throw suffix tothe function declaration: float myFunction (char param) throw (int);
+- Tis function takes argument char, returns element float, can only throw exceptions of type int
+- throw (); means that the function cannot throw any exceptions
+- Functions with no throw specifier (regular functions) can throw exceptions with any type
+----------------------
+standard exceptions:
+- the c++ standard library has a base class specifically for declaring objects to be thrown as exceptions
+- it's called "exception" and is defined in the <exception> header file under the namespace std. This class has the default and copy constructors, operators and destructors, and a virtual member function called what that returns a null terminated character sequence (char *), which can be overwritten in derived classes to contain a description of the exception:
+
+// standard exceptions
+#include <iostream>
+#include <exception>
+using namespace std; 
+class myexception: public exception 
+{ 
+ virtual const char* what() const throw() 
+ { 
+ return "My exception happened"; 
+ } 
+} myex; 
+int main () { 
+ try
+ { 
+ throw myex; 
+ } 
+ catch (exception& e) 
+ { 
+ cout << e.what() << endl; 
+ } 
+ return 0; 
+} 
+
+prints
+My exception happened.
+
+
+
+All exceptions thrown by components of the C++ std libary throw exceptions dervied from this std::exception class:
+*format: exception, description*
+bad_alloc, thrown by new on allocation failure
+bad_cast, thrown by dynamic__cast when fails with a refrenced type
+bad_exception, thrown when an exception type doesn't match any catch
+bad_typeid, thrown by typeid
+ios_base::failure, thrown by functions in the iostream library
+
+For example, if we use the operator new and the memory cannot be allocated, an exception of type bad_alloc is thrown:
+
+try
+{ 
+ int * myarray= new int[1000]; 
+} 
+catch (bad_alloc&) 
+{ 
+ cout << "Error allocating memory." << endl;
+}
+
+We can catch references to the exception class:
+// bad_alloc standard exception
+#include <iostream>
+#include <exception>
+using namespace std; 
+int main () { 
+ try
+ { 
+ int* myarray= new int[1000]; 
+ } 
+ catch (exception& e) 
+ { 
+ cout << "Standard exception: " << e.what() 
+<< endl; 
+ } 
+ return 0; 
+}
+
+---------------------
+type casting:
+- implicit conversion:
+	short a = 2000;
+	int b;
+	b = a;
+- standard conversions affect fundamental data types, allowing onversions between numerical types, to or from bool, and some pointer conversions. These may imply a loss of precision, signalling warning to the compiler, which can be avoided with explicit conversion
+- explicit conversion:
+short a = 2000;
+int b;
+b = (int) a; //c-like cast notation
+b = int (a); //functional notation
+- Explicit conversion can result in run time errors if used for imcombatible types
+
+Four specific casting operators for conversions between classes: 
+dynamic_cast <new_type> (expression) 
+reinterpret_cast <new_type> (expression) 
+static_cast <new_type> (expression) 
+const_cast <new_type> (expression)
+------------------------------
+dynamic_cast, used only with pointers and references to objects, purpose is to ensure that the reult of the type conversion is a valid complete object of the requested class. Always successful wehn we cast a class to one of its bass classes:
+class CBase { }; 
+class CDerived: public CBase { }; 
+CBase b; CBase* pb; 
+CDerived d; CDerived* pd; 
+pb = dynamic_cast<CBase*>(&d); // ok: derived-to-base
+pd = dynamic_cast<CDerived*>(&b); // wrong: base-to-derived
+
+When a class is polymorphic, dynamic_cast performs a special checking during runtime to ensure that the expression yields a valid complete object of the requested class: 
+// dynamic_cast
+#include <iostream>
+#include <exception>
+using namespace std; 
+class CBase { virtual void dummy() {} }; 
+class CDerived: public CBase { int a; }; 
+int main () { 
+ try { 
+ CBase * pba = new CDerived; 
+ CBase * pbb = new CBase; 
+ CDerived * pd; 
+ pd = dynamic_cast<CDerived*>(pba); 
+ if (pd==0) cout << "Null pointer on first type-cast" << endl; 
+ pd = dynamic_cast<CDerived*>(pbb); 
+ if (pd==0) cout << "Null pointer on second type-cast" << endl; 
+ } catch (exception& e) {cout << "Exception: " << e.what();} 
+ return 0; 
+} 
+
+prints
+Null pointer on second type-cast
+------------
+static_cast
+- performs conversions between pointers to related classes, from derived to base classes and vice versa. No safety check ensures proper conversion, tso the programmer must ensure that the conversion is safe. The overhead of the type-safety checks of dynamic_cast is avoided
+
+class CBase {}; 
+class CDerived: public CBase {}; 
+CBase * a = new CBase; 
+CDerived * b = static_cast<CDerived*>(a);
+
+static_cast can also be used for the implicit casting of fundamental types:
+double d = 3.1315
+int i = static_cast<int>(d);
+---------------------
+reinterpret_cast, converts any pointer type to any other pointer type, even of unrelated classes. A simple binary copy of the value from one pointer to the other. All pointer conversions are allowed:
+class A {}; 
+class B {}; 
+A * a = new A; 
+B * b = reinterpret_cast<B*>(a);
+---------------------
+const_cast, manipulates the constness of an object, either to be set or removed, such as to pass a const argument to a function that expects a non-constant paramater:
+// const_cast
+#include <iostream>
+using namespace std; 
+void print (char * str) 
+{ 
+ cout << str << endl; 
+} 
+int main () { 
+ const char * c = "sample text"; 
+ print ( const_cast<char *> (c) ); 
+ return 0; 
+} 
+
+-----------------
+typeid allows to check the type of an expression: typeid (expression):
+
+// typeid
+#include <iostream>
+#include <typeinfo>
+using namespace std; 
+int main () { 
+ int * a,b; 
+ a=0; b=0; 
+ if (typeid(a) != typeid(b)) 
+ { 
+ cout << "a and b are of different types:\n"; 
+ cout << "a is: " << typeid(a).name() << '\n'; 
+ cout << "b is: " << typeid(b).name() << '\n'; 
+ } 
+ return 0; 
+} 
+
+prints:
+a and b are of different types: 
+a is: int *
+b is: int
+
+when applied to objects, it refers to the most derived class of the object:
+
+// typeid, polymorphic class
+#include <iostream>
+#include <typeinfo>
+#include <exception>
+using namespace std; 
+class CBase { virtual void f(){} }; 
+class CDerived : public CBase {}; 
+int main () { 
+ try { 
+ CBase* a = new CBase; 
+ CBase* b = new CDerived; 
+ cout << "a is: " << typeid(a).name() << '\n'; 
+ cout << "b is: " << typeid(b).name() << '\n'; 
+ cout << "*a is: " << typeid(*a).name() << '\n'; 
+ cout << "*b is: " << typeid(*b).name() << '\n'; 
+ } catch (exception& e) { cout << "Exception: " << e.what() << endl; 
+} 
+ return 0; 
+} 
+
+prnts:
+a is: class CBase *
+b is: class CBase *
+*a is: class CBase
+*b is: class CDerived
+----------------------
+preprocessor directives, directives for the preprocessor
+- preceded by a hash sign (#)
+- Executed before actual complilation of code
+-------------------------
+macro definitions
+- To define preprocessor macros, we can use #define:
+#define identifier replacement;
+- does not understand C++, only replaces any occurence of identifier by replacement
+#define TABLE_SIZE 100
+int table1[TABLE_SIZE];
+int table2[TABLE_SIZE]; 
+becomes equivalent to
+int table1[100];
+int table2[100]; 
+
+can also be used to define function macros:
+// function macro
+#include <iostream>
+using namespace std; 
+#define getmax(a,b) ((a)>(b)?(a):(b))
+int main() 
+{ 
+ int x=5, y; 
+ y= getmax(x,2); 
+ cout << y << endl; 
+ cout << getmax(7,x) << endl; 
+ return 0; 
+} 
+
+prints 
+5
+7
+- a macro lasts until it is undefined with the #undef preprocessor directive
+
+#define TABLE_SIZE 100
+int table1[TABLE_SIZE];
+#undef TABLE_SIZE
+#define TABLE_SIZE 200
+int table2[TABLE_SIZE];
+
+- The operator ## concatenates two arguments leaving no blank spaces between them: 
+#define glue(a,b) a ## b
+glue(c,out) << "test";
+is translated to
+cout << "test";
+-------------------------
+conditional inclusions-- #ifdef, #ifndef, #if, #endif, #if, #endif, #else, #elif
+
+#ifdef TABLE_SIZE
+int table[TABLE_SIZE];
+#endif 
+
+#ifndef TABLE_SIZE
+#define TABLE_SIZE 100
+#endif
+int table[TABLE_SIZE];
+-------
+#if TABLE_SIZE>200
+#undef TABLE_SIZE
+#define TABLE_SIZE 200
+ 
+#elif TABLE_SIZE<50
+#undef TABLE_SIZE
+#define TABLE_SIZE 50
+ 
+#else
+#undef TABLE_SIZE
+#define TABLE_SIZE 100
+#endif
+ 
+int table[TABLE_SIZE]; 
+---------
+#if !defined TABLE_SIZE
+#define TABLE_SIZE 100
+#elif defined ARRAY_SIZE
+#define TABLE_SIZE ARRAY_SIZE
+int table[TABLE_SIZE]; 
+-------------------------
+Line control, #line
+- allows us to control the line numbers within the code files as well as the file name that we want that appears when an error takes place, format:
+#line number "filename"
+
+#line 20 "assigning ariable"
+int a?;
+generates an error that will show as "assigning ariable", line 20
+-----------------------
+Error directive (#error)
+- aborts the compliation process when it is found
+#ifndef __cplusplus
+#error A C++ compiler is required
+#end if
+the above abort the compliation process if the macro name __cplusplus is not defined (this macro is defined by default in all c++ compilers)
+-------------------------------
+source file inclusion (#include)
+#include "file"
+#include <file>
+The only difference is that the compiler looks for the file in quotation marks in the file containing the directive and then the standard library files if it's not there. the file in <> searches the std library automatically.
+----------------------
+pragma directive (#pragma)
+- used to specify diverse options to the compiler
+- ????
+---------------------------
+predefined maco names, format: macro, value
+__LINE__, integer value representing the current line in the source code file being compiled
+__FILE__, a string literal containing the presumed name of the source file being compiled
+__DATA__, a string literal in the form "MMmm dd yyyy" containing the date in which the compilation process began
+__TIME__, a string literal in the form "hh:mm:ss" containing the time at which the compliation process began
+__cplusplus, an integer value. All C++ ompilers have this constant defined to some value. If the compiler is fully compliant with the c++ standard, its value is equal or greater than 199811L depending on the version of the standard they comply
+
+// standard macro names
+#include <iostream>
+using namespace std; 
+int main() 
+{ 
+ cout << "This is the line number " << __LINE__; 
+ cout << " of file " << __FILE__ << ".\n"; 
+ cout << "Its compilation began " << __DATE__; 
+ cout << " at " << __TIME__ << ".\n"; 
+ cout << "The compiler gives a __cplusplus value of "; 
+ cout << __cplusplus;
+ return 0; 
+} 
+
+prints:
+This is the line number 7 of file 
+/home/jay/stdmacronames.cpp. 
+Its compilation began Nov 1 2005 at 
+10:12:29. 
+The compiler gives a __cplusplus value 
+of 1
+----------------------------
+input/output with files:
+- ofstream: stream class to write on files
+- ifstream, stream class to read from files
+- fstram, stream class to both rad and write from/to files
+- derived irectly or indirectly from the classes istream and ostream. cin is an object of class istream and cout is an object of class ostream.
+
+// basic file operations
+#include <iostream>
+#include <fstream>
+using namespace std; 
+int main () { 
+ ofstream myfile; 
+ myfile.open ("example.txt"); 
+ myfile << "Writing this to a file.\n"; 
+ myfile.close(); 
+ return 0; 
+} 
+
+prints:
+[file example.txt] 
+Writing this to a file 
+
+the code above creates a file called example.txt and inserts a sentence into it the same way we do for cout, but using file stream myfile instead
+---------------------
+open a file:
+open (filename, mode)
+
+flags (format: flag, description):
+- ios::in, open for input operations
+- ios::out, open for output operations
+ios::binary, open in binary mode
+ios::ate, set initial position at the end of the file. If flag is not set to any value the initial position is the beginning of hte file
+ios::app, all output operations are performed at the end of the file, appending the content to the current content of the file. This flag can only be used in streams open for output-only operations
+ios::trunc, if the file opened for output operations already existed before its previous content is deleted and replaced by the new one
+
+these flags can be combined using the operator OR (|):
+
+ofstream myfile; 
+myfile.open ("example.bin", ios::out | ios::app | ios::binary);
+
+Each of the open() member functions has a default mode that is used if the file is opened without a second argument:
+ofstream, ios::out
+ifstream, ios::in
+fstream, ios::in | ios::out
+
+
+To check if a file is open, use member is_open() with no arguments:
+if (myfile.is_pen())
+{
+}
+
+When finished with input/output operations, close the file so the resources used to open become available again. use the member function close ():
+myfile.close();
+--------------------------
+Text files:
+- they are streams where we don't include the ios::binary flag in their opening mode, designed to store text. 
+- Sample output operations:
+
+int main () { 
+ ofstream myfile ("example.txt"); 
+ if (myfile.is_open()) 
+ { 
+ myfile << "This is a line.\n"; 
+ myfile << "This is another line.\n"; 
+ myfile.close(); 
+ } 
+ else cout << "Unable to open file"; 
+ return 0; 
+}
+
+prints:
+[file example.txt] 
+This is a line. 
+This is another line. 
+
+- Sample input operations:
+int main () { 
+ string line; 
+ ifstream myfile ("example.txt"); 
+ if (myfile.is_open()) 
+ { 
+ while (! myfile.eof() ) 
+ { 
+ getline (myfile,line); 
+ cout << line << endl; 
+ } 
+ myfile.close(); 
+ } 
+ else cout << "Unable to open file"; 
+ return 0; 
+} 
+
+prints:
+This is a line. 
+This is another line. 
+
+- member function eof() returns true if the end of the file has been reached.
+
+- Additional bool member functions to check the state of the stream:
+	- bad(), returns true if a reading or writing operation fails, such as trying to write to a file that is not open
+	- fail(), returns true in the same cases as bad(), but also when a format error happens (like reading an alphabetical character instead of an integer)
+	- eof(), returns true if a file open for reading has reached the end
+	- good(), most generic state flag, returns fall in the same cases in which calling the previous functions would return true
+------------------------
+get/put stream pointers:
+- all i/o stream objects have at least one internal stream pointer:
+	- ifstream and istream has the get pointer, which poitns to the element to be read in the next input operation
+	- ofstream and ostream have a put pointer that points to the location where the next element has to be written
+	- the f stream has both the get and put pointers
+	- Inteneral stream pointers can be manipulated using the following functions:
+- tellg() and tellp():
+	- two member functions with no paramaters return a value of type pos_type, an integer data type representing the current position of the get streamer (tellg) or put streamer (tellp) pointers
+- seekg() and seekp()
+	- let us change the position of the get/put stream pointers, both overloaded with two prototypes:
+	seekg(position);
+	seekp(position);
+	the above prototype changes the absolute position. Type for this parameter is the same as the one returned by functions tellg and tellp (pos_type, an integer value)
+	seekg(offset, direction);
+	seekp(offset, direction)
+	the above prototype changes the position of the get/put pointer to an offset value relative to some point determined b the parameter direction. offset is of type off_type, an integer type. Direction is of type seekdir, an enumerated type that determines the point from where offset is counted from, can only take the following values:
+		- ios::beg, offset counted from the beginning of the stream
+		- ios::cur, offset counted from current position of the stream pointer
+		ios::end, offset coutned from the end of the stream
+example:
+int main () { 
+ long begin,end; 
+ ifstream myfile ("example.txt"); 
+ begin = myfile.tellg(); 
+ myfile.seekg (0, ios::end); 
+ end = myfile.tellg(); 
+ myfile.close(); 
+ cout << "size is: " << (end-begin) << " bytes.\n"; 
+ return 0; 
+}
+
+prints:
+size is: 40 bytes
+-------------------------------------
+Binary files:
+- we don't format data, so functions like getline are not efficient
+- file streams include two functions for input/output binary data sequentialy: write and read
+- write is a member function of ostream inherited by ofstream. read is a member function of istream that is inherited y ifstrea. Objects of class fstream have both members. Prototypes:
+	write (memory_block, size);
+	read (memory_block, size);
+- memory_block is of type "pointer to char" (char*), represents the address of an array of bytes where the read data elements are stored or from where the data elements to be written are taken. The size parameter is an integer value that specifies the number of characters to be read or written from/to the memory block
+
+example:
+ifstream::pos_type size; 
+char * memblock; 
+int main () { 
+ ifstream file ("example.bin", 
+ios::in|ios::binary|ios::ate); 
+ if (file.is_open()) 
+ { 
+ size = file.tellg(); 
+ memblock = new char [size]; 
+ file.seekg (0, ios::beg); 
+ file.read (memblock, size); 
+ file.close(); 
+ cout << "the complete file content is in memory"; 
+ delete[] memblock; 
+ } 
+ else cout << "Unable to open file"; 
+ return 0; 
+}
+
+prints: the complete file content is in memory
+
+In the above example, the entire file is read and stored ina  memory block:
+- first, the file opens with the ios::ate flag, meaning the get pointer will be positioned at the end of the file. when we call tellg(), we will directly obtain the size of the file. We have to declare variable size: ifstream::pos_type size;
+- ifstream::pos_type is a specific type used for buffer and file positioning. We ca convert it to another integer type since it is defined as an integer type. For a file under 2GB in size, we could use int:
+	int size;
+	size = (int) file.tellg();
+
+- Once we find the size of the file, we request the allocation of a memory block large enough to hold the file: memblock = new char [size];
+
+- afterward, we set the get pointer at the beginning of the file, read it, then close it:
+file.seekg (0, ios::beg); 
+file.read (memblock, size);
+file.close(); 
+------------------
+Buffers and synchronization:
+- when working with file streams, we associate them to an internal buffer of type streambuf. This is a memory block that acts betweent he stream and the physical file. Each time the function put, which writes a single character, is called, the character is written to the intermediate buffer, not the physical file. When the buffer is flushed, all the data contained in it is written to the physical medium (output stream) or freed (input stream). This is called synchronization. It happens when:
+	- the file is being closed: before closing a file, all buffers that have not yet been flushed are synchronized and all pending data is written or read to the physical medium
+	- when the buffer is full: buffers have a certain size. Reaching capacity automatically sets off syncrhonization
+	- Explicitly, with manipulators: flush and endl
+	 Explicitly, with member function sync(): calling the stream member function sync() causes immediate syncrhonization. Returns an int value of -1 if the stream has no buffer or in case of failure. In case of successful synchronization, returns 0
