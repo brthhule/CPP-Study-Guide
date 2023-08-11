@@ -1,0 +1,37 @@
+- Defined data types (typedef)
+	- does not create different types, only synonyms (think #define but for data types)
+	- Example: typedef char C makes it so that C may be used as char
+		- C word and char word have the same utility
+- Unions
+	- one portion of memory is accessed by different data types sincethey share the same location in memory
+	- example:
+	union *union_name* {
+	member_type1 member_name;
+	...
+	} object_names;
+	- All elements of the union declaration occpy the same physical space in memory
+	- union mytypes t {
+		char c;
+		int i;
+		float f;
+		} mytypes;
+	- The above will create mytypes.c, mytypes.i, etc. with the same location in memory. Changing one will change all
+	- For an anonymous union, simply do not name the union:
+	union {
+		float dollars;
+		int yens;
+	}
+	- This allows you to use dollars instead of price.dollars (if you had named the union)
+- Enumerations (enum)
+	- create new data types that containes values beyond the fundamental data types
+	- Format:
+	enum enumeration_name {
+	value 1,
+	value 2,
+	value 3,
+	} object_names;
+	- Example: enum colors_t {black, blue, green, cyan, red}; wherein colors_t may take on values of black, blue, green, cyan, red
+	- The values in order correspond to different integer values, starting with 0 (similar to indices)
+	- black would correspond to 0, blue to 1, etc
+	- you can explicitly state the value of the first type, which would then increase by a + 1 afterward.
+	enum colors_t {black = 1, blue, green}; in which blue = 2, etc
